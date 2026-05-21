@@ -293,52 +293,64 @@ function renderC(){
     box.innerHTML = "<div class='empty'><p>Cart khali hai!<br>Kuch products add karein.</p></div>";
     return;
   }
-  
   var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
-  var totalItems = items.reduce(function(s,i){ return s + i.qty; }, 0);
-  
-  var delCharge = 15;
-  if (totalItems >= 11 && totalItems <= 19) {
-    delCharge = 25;
-  } else if (totalItems >= 20) {
-    delCharge = 30;
-  }
-  
-  var isPickup = (document.getElementById("ar") && document.getElementById("ar").value === "Shop Pickup");
-  if(isPickup) {
-    delCharge = 0;
-  }
-
-  var finalTotal = sub + delCharge;
-  var advanceAmount = Math.round(finalTotal / 2);
-
   var rows = items.map(function(i){
     return "<div class='cit'>"
       +"<div class='cf'><div class='cfn'>"+i.name+" x "+i.qty+"</div>"
       +"<div class='cfp'>Rs. "+(i.price*i.qty)+"</div></div>"
       +"<button class='rb' onclick='rem("+i.id+")'>Hatao</button></div>";
   }).join("");
-  
   var ao = ["Pandey Tola","Pandit Tola","Bhumihar Tola","Goswami Tola","Shop Pickup"]
     .map(function(a){ return "<option>"+a+"</option>"; }).join("");
-    
-  var advanceHTML = isPickup 
-    ? "<div class='sr' style='color:#C0392B; font-weight:700;'><span>Advance (50% Online)</span><span>Rs. "+advanceAmount+"</span></div>"
-      +"<div class='sr' style='color:#1B5E20; font-weight:600;'><span>Baki Paisa (Dukan par)</span><span>Rs. "+(finalTotal - advanceAmount)+"</span></div>"
-    : "";
-
   box.innerHTML = "<div class='ci'>"+rows+"</div>"
     +"<div class='cs'>"
-    +"<div class='sr'><span>Subtotal ("+totalItems+" items)</span><span>Rs. "+sub+"</span></div>"
-    +"<div class='sr'><span>Delivery Charge</span><span id='delText'>Rs. "+delCharge+"</span></div>"
-    +"<div class='sr tot'><span>Total Bill</span><span id='totText'>Rs. "+finalTotal+"</span></div>"
-    +"<div id='advBox'>"+advanceHTML+"</div>"
+    +"<div class='sr'><span>Subtotal</span><span>Rs. "+sub+"</span></div>"
+    +"<div class='sr'><span>Delivery</span><span style='color:green'>FREE</span></div>"
+    +"<div class='sr tot'><span>Total</span><span>Rs. "+sub+"</span></div>"
     +"</div>"
     +"<div class='of'><h3>Delivery Details</h3>"
     +"<div class='fg'><label>Aapka Naam</label><input type='text' id='nm' placeholder='Naam likhein'></div>"
     +"<div class='fg'><label>Phone Number</label><input type='tel' id='ph' placeholder='10 digit number'></div>"
-    +"<div class='fg'><label>Delivery Area</label><select id='ar' onchange='updateDel()'><option value=''>-- Area chunein --</option>"+ao+"</select></div>"
-    +"<div class='dn' id='noticeText'>Delivery Charge: 1-10 items = Rs.15 | 11-19 items = Rs.25 | 20+ items = Rs.30 (Shop Pickup is FREE)</div>"
+    +"<div class='fg'><label>Delivery Area</label><select id='ar'><option value=''>-- Area chunein --</option>"+ao+"</select></div>"
+    +"<div class='dn'>Free home delivery: Pandey Tola, Pandit Tola, Bhumihar Tola, Goswami Tola. Shop pickup bhi available.</div>"
     +"<button class='wb' onclick='sendWA()'>WhatsApp pe Order Bhejo</button>"
     +"</div>";
 }
+
+function sendWA(){
+  var nm = document.getElementById("nm").value.trim();
+  var ph = document.getElementById("ph").value.trim();
+  var ar = document.getElementById("ar").value;
+  if(!nm || !ph || !ar){ alert("Naam, phone aur area zaroor bharein!"); return; }
+  var items = Object.keys(cart).map(function(k){ return cart[k]; });
+  var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
+  var msg = "NBP Store - Naya Order\\n\\n";
+  msg += "Naam: " + nm + "\\n";
+  msg += "Phone: " + ph + "\\n";
+  msg += "Area: " + ar + "\\n\\n";
+  msg += "Items:\\n";
+  items.forEach(function(i){ msg += "- " + i.name + " x " + i.qty + " = Rs. " + (i.price * i.qty) + "\\n"; });
+  msg += "\\nTotal: Rs. " + sub;
+  msg += "\\n\\nDhanyawad!";
+  window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(msg), "_blank");
+}
+
+renderP();
+</script>
+</body>
+</html>"""
+
+@app.route("/")
+def home():
+    # PRODUCTS लिस्ट को JSON में बदलकर वेबपेज पर लोड करना
+    page = HTML.replace("PRODUCTS_JSON", json.dumps(PRODUCTS))
+    return page
+
+if __name__ == "__main__":
+    print("=" * 45)
+    print("  NBP Store Website Chal Rahi Hai!")
+    print("  Browser mein kholein:")
+    print("  http://127.0.0.1:5000")
+    print("=" * 45)
+    app.run(debug=True, host="0.0.0.0", port=5000)
+    ]
