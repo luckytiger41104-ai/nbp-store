@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: nbp-store
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn nbpstore:app
