@@ -297,7 +297,6 @@ function renderC(){
   var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
   var totalItems = items.reduce(function(s,i){ return s + i.qty; }, 0);
   
-  // सामान की संख्या के हिसाब से डिलीवरी चार्ज सेट करना
   var delCharge = 15;
   if (totalItems >= 11 && totalItems <= 19) {
     delCharge = 25;
@@ -311,7 +310,7 @@ function renderC(){
   }
 
   var finalTotal = sub + delCharge;
-  var advanceAmount = Math.round(finalTotal / 2); // आधा पैसा (50%)
+  var advanceAmount = Math.round(finalTotal / 2);
 
   var rows = items.map(function(i){
     return "<div class='cit'>"
@@ -343,93 +342,3 @@ function renderC(){
     +"<button class='wb' onclick='sendWA()'>WhatsApp pe Order Bhejo</button>"
     +"</div>";
 }
-
-function updateDel() {
-  var ar = document.getElementById("ar").value;
-  var items = Object.keys(cart).map(function(k){ return cart[k]; });
-  var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
-  var totalItems = items.reduce(function(s,i){ return s + i.qty; }, 0);
-  
-  var delCharge = 15;
-  if (totalItems >= 11 && totalItems <= 19) {
-    delCharge = 25;
-  } else if (totalItems >= 20) {
-    delCharge = 30;
-  }
-  
-  if(ar === "Shop Pickup") {
-    delCharge = 0;
-  }
-  
-  var finalTotal = sub + delCharge;
-  var advanceAmount = Math.round(finalTotal / 2);
-  
-  document.getElementById("delText").textContent = delCharge === 0 ? "FREE" : "Rs. " + delCharge;
-  document.getElementById("totText").textContent = "Rs. " + finalTotal;
-  
-  if(ar === "Shop Pickup") {
-    document.getElementById("advBox").innerHTML = "<div class='sr' style='color:#C0392B; font-weight:700;'><span>Advance (50% Online)</span><span>Rs. "+advanceAmount+"</span></div>"
-      +"<div class='sr' style='color:#1B5E20; font-weight:600;'><span>Baki Paisa (Dukan par)</span><span>Rs. "+(finalTotal - advanceAmount)+"</span></div>";
-    document.getElementById("noticeText").innerHTML = "⚠️ <b>Shop Pickup Rule:</b> Dukan par saman lene se pehle aapko 50% advance online pay karna hoga.";
-    document.getElementById("noticeText").style.color = "#C0392B";
-  } else {
-    document.getElementById("advBox").innerHTML = "";
-    document.getElementById("noticeText").innerHTML = "Delivery Charge: 1-10 items = Rs.15 | 11-19 items = Rs.25 | 20+ items = Rs.30 (Shop Pickup is FREE)";
-    document.getElementById("noticeText").style.color = "#FF6B00";
-  }
-}
-
-function sendWA(){
-  var nm = document.getElementById("nm").value.trim();
-  var ph = document.getElementById("ph").value.trim();
-  var ar = document.getElementById("ar").value;
-  if(!nm || !ph || !ar){ alert("Naam, phone aur area zaroor bharein!"); return; }
-  
-  var items = Object.keys(cart).map(function(k){ return cart[k]; });
-  var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
-  var totalItems = items.reduce(function(s,i){ return s + i.qty; }, 0);
-  
-  var delCharge = 15;
-  if (totalItems >= 11 && totalItems <= 19) {
-    delCharge = 25;
-  } else if (totalItems >= 20) {
-    delCharge = 30;
-  }
-  
-  if(ar === "Shop Pickup") {
-    delCharge = 0;
-  }
-  
-  var finalTotal = sub + delCharge;
-  var advanceAmount = Math.round(finalTotal / 2);
-  
-  var msg = "NBP Store - Naya Order\\n\\n";
-  msg += "Naam: " + nm + "\\n";
-  msg += "Phone: " + ph + "\\n";
-  msg += "Area: " + ar + "\\n\\n";
-  msg += "Items:\\n";
-  items.forEach(function(i){ msg += "- " + i.name + " x " + i.qty + " = Rs. " + (i.price * i.qty) + "\\n"; });
-  msg += "\\nSubtotal: Rs. " + sub;
-  msg += "\\nDelivery Charge: Rs. " + delCharge;
-  msg += "\\nTotal Bill: Rs. " + finalTotal;
-  
-  if(ar === "Shop Pickup") {
-    msg += "\\n\\n🔴 *ADVANCE TO PAY (50%): Rs. " + advanceAmount + "*";
-    msg += "\\n🟢 Baki bacha paisa dukan par dein: Rs. " + (finalTotal - advanceAmount);
-    msg += "\\n\\n*(Kripya advance paise upar diye gaye number par PhonePe/GooglePay karein taaki aapka saman pack rakha jaye)*";
-  }
-  
-  msg += "\\n\\nDhanyawad!";
-  window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(msg), "_blank");
-}
-</script>
-</body>
-</html>"""
-
-@app.route("/")
-def home():
-    page = HTML.replace("PRODUCTS_JSON", json.dumps(PRODUCTS))
-    return page
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
