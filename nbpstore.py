@@ -1,11 +1,19 @@
-import json
-from flask import Flask
+#!/usr/bin/env python3
 
-app = Flask(__name__)
+# -*- coding: utf-8 -*-
 
-# 1. आपके स्टोर के सभी 48 प्रोडक्ट्स की पूरी लिस्ट
-PRODUCTS = [
-    {"id": 1, "name": "Aata (Wheat Flour)", "unit": "1kg", "price": 40, "cat": "grocery"},
+“””
+NBP General Store & Puja Bhandar - Billing System
+Dhamna, Jamui, Bihar
+“””
+
+# ─────────────────────────────────────────────
+
+# PRODUCT CATALOG (naam, daam)
+
+# ─────────────────────────────────────────────
+
+products = {}  #{"id": 1, "name": "Aata (Wheat Flour)", "unit": "1kg", "price": 40, "cat": "grocery"},
     {"id": 2, "name": "Chawal (Rice)", "unit": "1kg", "price": 45, "cat": "grocery"},
     {"id": 3, "name": "Dal Chana", "unit": "1kg", "price": 100, "cat": "grocery"},
     {"id": 4, "name": "Dal Mashur", "unit": "1kg", "price": 80, "cat": "grocery"},
@@ -71,286 +79,256 @@ PRODUCTS = [
     {"id": 21, "name": "Agarbatti", "unit": "Pack", "price": 20, "cat": "puja"},
     {"id": 21, "name": "Agarbatti", "unit": "Pack", "price": 50, "cat": "puja"},
     {"id": 21, "name": "Agarbatti", "unit": "Pack", "price": 15, "cat": "puja"},
-    {"id": 21, "name": "Agarbatti", "unit": "Pack", "price": 50, "cat": "puja"},
+    {"id": 21, "name": "Agarbatti", "unit": "Pack", "price": 50, "cat": "puja"}, { product_id: {“naam”: str, “daam”: float, “unit”: str} }
+next_id = 1    # auto-increment product ID
 
-]
-# 2. आपका वेबपेज डिज़ाइन (HTML/CSS/JS)
-HTML = """<!DOCTYPE html>
-<html lang='hi'>
-<head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>NBP General Store and Puja Bhandar</title>
-<link href='https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap' rel='stylesheet'>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Poppins,sans-serif;background:#FFF8F0;color:#1a1a1a}
-header{background:linear-gradient(135deg,#FF6B00,#C0392B);position:sticky;top:0;z-index:100;box-shadow:0 3px 15px rgba(0,0,0,.3)}
-.hi{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
-.logo{width:44px;height:44px;background:#FFB300;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#1a1a1a}
-.sn{flex:1;margin-left:10px}
-.sn h1{font-size:13px;font-weight:700;color:#fff}
-.sn p{font-size:11px;color:rgba(255,255,255,.85)}
-.cartbtn{background:#FFB300;border:none;border-radius:20px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:Poppins,sans-serif}
-.cn{background:#C0392B;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
-.bn{background:#FFB300;padding:7px 14px;text-align:center;font-size:11px;font-weight:600;border-bottom:2px dashed #FF6B00}
-.search-box{padding:10px 14px;background:#fff;border-bottom:1px solid #eee}
-.search-box input{width:100%;padding:9px 14px;border:2px solid #FF6B00;border-radius:25px;font-size:13px;font-family:Poppins,sans-serif;outline:none}
-.cats{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #eee}
-.cats::-webkit-scrollbar{display:none}
-.ct{flex-shrink:0;padding:6px 14px;border-radius:20px;border:2px solid #FF6B00;background:#fff;color:#FF6B00;font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif}
-.ct.on,.ct:hover{background:#FF6B00;color:#fff}
-.st{padding:14px 14px 8px;font-size:16px;font-weight:700;color:#C0392B}
-.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 10px 80px}
-.pc{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-top:3px solid #FF6B00}
-.ptag{display:inline-block;background:#fff3e0;color:#FF6B00;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px;text-transform:uppercase}
-.pn{font-size:12px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
-.pu{font-size:11px;color:#999;margin-bottom:5px}
-.pp{font-size:15px;font-weight:700;color:#FF6B00;margin-bottom:8px}
-.ab{width:100%;background:linear-gradient(135deg,#FF6B00,#C0392B);color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif}
-.qc{display:flex;align-items:center;justify-content:space-between;background:#fff3e0;border-radius:8px;padding:3px}
-.qb{width:30px;height:30px;background:#FF6B00;color:#fff;border:none;border-radius:6px;font-size:20px;font-weight:700;cursor:pointer;line-height:1;font-family:Poppins,sans-serif}
-.qnum{font-size:15px;font-weight:700}
-.no-results{padding:30px;text-align:center;color:#aaa;font-size:14px;grid-column:span 2}
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200}
-.ov.on{display:block}
-.cp{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;z-index:201;transform:translateY(100%);transition:transform .3s;padding-bottom:30px}
-.cp.on{transform:translateY(0)}
-.ch{background:linear-gradient(135deg,#FF6B00,#C0392B);color:#fff;padding:15px 18px;border-radius:20px 20px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
-.ch h2{font-size:16px;font-weight:700}
-.xb{background:rgba(255,255,255,.25);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:18px;cursor:pointer;font-family:Poppins,sans-serif}
-.ci{padding:10px 14px}
-.cit{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f0e8}
-.cf{flex:1}
-.cfn{font-size:13px;font-weight:600}
-.cfp{font-size:13px;color:#FF6B00;font-weight:700}
-.rb{background:#ffebee;border:none;border-radius:6px;padding:6px 10px;color:#C0392B;cursor:pointer;font-size:13px;font-family:Poppins,sans-serif}
-.cs{margin:4px 14px 14px;background:#fff8f0;border-radius:10px;padding:12px;border:1px dashed #FFB300}
-.sr{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
-.sr.tot{font-weight:700;font-size:15px;color:#C0392B;border-top:1px solid #ddd;padding-top:10px;margin-top:6px}
-.of{padding:0 14px}
-.of h3{font-size:14px;font-weight:700;margin-bottom:10px}
-.fg{margin-bottom:10px}
-.fg label{font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:3px}
-.fg input,.fg select{width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:Poppins,sans-serif;background:#fff;outline:none}
-.fg input:focus,.fg select:focus{border-color:#FF6B00}
-.dn{background:#e8f5e9;border-radius:8px;padding:9px;font-size:11px;color:#1B5E20;font-weight:500;margin-bottom:12px}
-.wb{width:100%;background:#25D366;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:Poppins,sans-serif}
-.empty{text-align:center;padding:40px 20px;color:#bbb;font-size:14px}
-footer{background:#1a1a1a;color:#fff;text-align:center;padding:20px;font-size:12px}
-footer p{opacity:.7;margin:4px 0}
-footer strong{color:#FFB300}
-</style>
-</head>
-<body>
+def delivery_charge(item_count):
+“””
+10-19 items → ₹15
+20-29 items → ₹30
+30-39 items → ₹45
+… har 10 items par ₹15 badhta hai
+9 ya kam items → Free
+“””
+if item_count < 10:
+return 0
+slab = (item_count - 10) // 10  # 0, 1, 2, …
+return 15 * (slab + 1)
 
-<header>
-  <div class='hi'>
-    <div class='logo'>NBP</div>
-    <div class='sn'>
-      <h1>NBP General Store &amp; Puja Bhandar</h1>
-      <p>Dhamna, Jamui, Bihar | Ph: 7667984349</p>
-    </div>
-    <button class='cartbtn' onclick='openCart()'>Cart <span class='cn' id='cc'>0</span></button>
-  </div>
-  <div class='bn'>15 rupees Delivery: Pandey Tola | Pandit Tola | Bhumihar Tola | Goswami Tola</div>
-</header>
+# ─────────────────────────────────────────────
 
-<div class='search-box'>
-  <input type='text' id='searchInput' placeholder='Product khojein... (e.g. Aata, Dal, Soap)' oninput='doSearch(this.value)'>
-</div>
+# PRODUCT MANAGEMENT
 
-<div class='cats'>
-  <button class='ct on' onclick='filt("all",this)'>Sab Products</button>
-  <button class='ct' onclick='filt("grocery",this)'>Grocery</button>
-  <button class='ct' onclick='filt("puja",this)'>Puja Samagri</button>
-  <button class='ct' onclick='filt("snacks",this)'>Snacks</button>
-  <button class='ct' onclick='filt("personal",this)'>Personal Care</button>
-  <button class='ct' onclick='filt("other",this)'>Anya (Other)</button>
-</div>
+# ─────────────────────────────────────────────
 
-<div class='st' id='stitle'>Hamare Products</div>
-<div class='pg' id='pg'></div>
+def product_add():
+global next_id
+print(”\n— Naya Product Add Karo —”)
+naam = input(“Product ka naam: “).strip()
+if not naam:
+print(“❌ Naam khaali nahi ho sakta.”)
+return
+try:
+daam = float(input(“Price (₹): “))
+if daam < 0:
+raise ValueError
+except ValueError:
+print(“❌ Galat price. Sirf number daalo.”)
+return
+unit = input(“Unit (e.g. kg, pcs, litre, packet) [default: pcs]: “).strip() or “pcs”
+products[next_id] = {“naam”: naam, “daam”: daam, “unit”: unit}
+print(f”✅ ‘{naam}’ add ho gaya! (ID: {next_id})”)
+next_id += 1
 
-<footer>
-  <p><strong>NBP General Store &amp; Puja Bhandar</strong></p>
-  <p>Dhamna, Jamui, Bihar</p>
-  <p>Phone: 7667984349</p>
-  <p>Home Delivery Available</p>
-</footer>
+def product_list():
+if not products:
+print(”\n⚠️  Abhi koi product nahi hai. Pehle product add karo.”)
+return
+print(”\n” + “=” * 50)
+print(f”  {‘ID’:<5} {‘Product’:<22} {‘Price’:>8}  {‘Unit’}”)
+print(”=” * 50)
+for pid, p in products.items():
+print(f”  {pid:<5} {p[‘naam’]:<22} ₹{p[‘daam’]:>6.2f}  {p[‘unit’]}”)
+print(”=” * 50)
 
-<div class='ov' id='ov' onclick='closeCart()'></div>
-<div class='cp' id='cp'>
-  <div class='ch'>
-    <h2>Aapka Cart</h2>
-    <button class='xb' onclick='closeCart()'>X</button>
-  </div>
-  <div id='cb'></div>
-</div>
+def product_delete():
+product_list()
+if not products:
+return
+try:
+pid = int(input(“Kaun sa ID delete karna hai? “))
+if pid not in products:
+print(“❌ ID nahi mila.”)
+return
+naam = products[pid][“naam”]
+confirm = input(f”’{naam}’ delete karna chahte ho? (haan/nahi): “).strip().lower()
+if confirm in (“haan”, “h”, “yes”, “y”):
+del products[pid]
+print(f”✅ ‘{naam}’ delete ho gaya.”)
+else:
+print(“Cancel ho gaya.”)
+except ValueError:
+print(“❌ Galat input.”)
 
-<script>
-var WA = "917667984349";
-var PR = PRODUCTS_JSON;
-var cart = {};
-var curCat = "all";
-var searchTerm = "";
+# ─────────────────────────────────────────────
 
-var catNames = {
-  "grocery": "Grocery",
-  "puja": "Puja Samagri",
-  "snacks": "Snacks",
-  "personal": "Personal Care",
-  "other": "Anya (Other)"
-};
+# BILLING
 
-function renderP() {
-  var g = document.getElementById("pg");
-  var list = PR;
-  if (searchTerm) {
-    list = PR.filter(function(p){ return p.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1; });
-  } else if (curCat !== "all") {
-    list = PR.filter(function(p){ return p.cat === curCat; });
-  }
-  if (list.length === 0) {
-    g.innerHTML = "<div class='no-results'>Koi product nahi mila.</div>";
-    return;
-  }
-  g.innerHTML = list.map(function(p) {
-    var q = cart[p.id] ? cart[p.id].qty : 0;
-    var tag = catNames[p.cat] || p.cat;
-    var btn = q === 0
-      ? "<button class='ab' onclick='add("+p.id+")'>+ Cart mein Daalo</button>"
-      : "<div class='qc'><button class='qb' onclick='dec("+p.id+")'>-</button><span class='qnum'>"+q+"</span><button class='qb' onclick='add("+p.id+")'>+</button></div>";
-    return "<div class='pc'>"
-      +"<div class='ptag'>"+tag+"</div>"
-      +"<div class='pn'>"+p.name+"</div>"
-      +"<div class='pu'>"+p.unit+"</div>"
-      +"<div class='pp'>Rs. "+p.price+"</div>"
-      +btn+"</div>";
-  }).join("");
-}
+# ─────────────────────────────────────────────
 
-function doSearch(val) {
-  searchTerm = val;
-  if (val) {
-    document.getElementById("stitle").textContent = "Search: " + val;
-    document.querySelectorAll(".ct").forEach(function(b){ b.classList.remove("on"); });
-  } else {
-    document.getElementById("stitle").textContent = "Hamare Products";
-  }
-  renderP();
-}
+def new_bill():
+if not products:
+print(”\n⚠️  Pehle product add karo (Menu → 1).”)
+return
 
-function filt(c, el) {
-  curCat = c;
-  searchTerm = "";
-  document.getElementById("searchInput").value = "";
-  document.getElementById("stitle").textContent = c === "all" ? "Hamare Products" : catNames[c] || c;
-  document.querySelectorAll(".ct").forEach(function(b){ b.classList.remove("on"); });
-  el.classList.add("on");
-  renderP();
-}
+```
+print("\n--- Naya Bill ---")
+customer_naam = input("Customer ka naam: ").strip() or "Customer"
+locality = input("Mohalla / Tola: ").strip() or "-"
+delivery_type = input("Delivery type (G=Ghar/S=Shop) [G]: ").strip().upper() or "G"
+is_delivery = delivery_type != "S"
 
-function fp(id){ for(var i=0;i<PR.length;i++) if(PR[i].id===id) return PR[i]; }
+cart = []  # list of (naam, qty, price_per_unit, unit)
 
-function add(id){
-  var p = fp(id);
-  if(!cart[id]) cart[id] = {id:p.id, name:p.name, price:p.price, qty:0};
-  cart[id].qty++;
-  upC(); renderP();
-}
+print("\nProduct ID daalo aur quantity. '0' daalo jab khatam ho.\n")
+product_list()
 
-function dec(id){
-  if(!cart[id]) return;
-  cart[id].qty--;
-  if(cart[id].qty <= 0) delete cart[id];
-  upC(); renderP();
-}
+while True:
+    try:
+        pid_input = input("\nProduct ID (0 = done): ").strip()
+        if pid_input == "0":
+            break
+        pid = int(pid_input)
+        if pid not in products:
+            print("❌ ID nahi mila.")
+            continue
+        qty = float(input(f"Quantity ({products[pid]['unit']}): "))
+        if qty <= 0:
+            print("❌ Quantity 0 se zyada honi chahiye.")
+            continue
+        cart.append({
+            "naam": products[pid]["naam"],
+            "qty": qty,
+            "daam": products[pid]["daam"],
+            "unit": products[pid]["unit"]
+        })
+        subtotal = qty * products[pid]["daam"]
+        print(f"  ✅ Added: {products[pid]['naam']} × {qty} = ₹{subtotal:.2f}")
+    except ValueError:
+        print("❌ Galat input, dobara daalo.")
 
-function rem(id){ delete cart[id]; upC(); renderP(); renderC(); }
+if not cart:
+    print("⚠️  Cart khaali hai, bill nahi bana.")
+    return
 
-function upC(){
-  var t = 0;
-  Object.keys(cart).forEach(function(k){ t += cart[k].qty; });
-  document.getElementById("cc").textContent = t;
-}
+# Calculations
+total_items = sum(item["qty"] for item in cart)
+subtotal_amount = sum(item["qty"] * item["daam"] for item in cart)
 
-function openCart(){
-  document.getElementById("ov").classList.add("on");
-  document.getElementById("cp").classList.add("on");
-  renderC();
-}
+dc = delivery_charge(int(total_items)) if is_delivery else 0
+grand_total = subtotal_amount + dc
 
-function closeCart(){
-  document.getElementById("ov").classList.remove("on");
-  document.getElementById("cp").classList.remove("on");
-}
+# ─── Print Bill ───
+bill_lines = []
+bill_lines.append("=" * 52)
+bill_lines.append("   NBP GENERAL STORE & PUJA BHANDAR")
+bill_lines.append("      Dhamna, Jamui, Bihar")
+bill_lines.append("=" * 52)
+bill_lines.append(f"  Customer : {customer_naam}")
+bill_lines.append(f"  Mohalla  : {locality}")
+bill_lines.append(f"  Delivery : {'Ghar Delivery' if is_delivery else 'Shop Pickup'}")
+bill_lines.append("-" * 52)
+bill_lines.append(f"  {'Item':<22} {'Qty':>5}  {'Rate':>7}  {'Amount':>8}")
+bill_lines.append("-" * 52)
+for item in cart:
+    amt = item["qty"] * item["daam"]
+    bill_lines.append(f"  {item['naam']:<22} {item['qty']:>5.1f}  ₹{item['daam']:>6.2f}  ₹{amt:>7.2f}")
+bill_lines.append("-" * 52)
+bill_lines.append(f"  {'Subtotal':<38} ₹{subtotal_amount:>7.2f}")
+if is_delivery:
+    slab_info = f"({int(total_items)} items)" if dc > 0 else "(9 ya kam items)"
+    bill_lines.append(f"  {'Delivery Charge ' + slab_info:<38} ₹{dc:>7.2f}")
+bill_lines.append("=" * 52)
+bill_lines.append(f"  {'GRAND TOTAL':<38} ₹{grand_total:>7.2f}")
+bill_lines.append("=" * 52)
+bill_lines.append("   Dhanyawaad! Phir aana. 🙏")
+bill_lines.append("=" * 52)
 
-function renderC(){
-  var box = document.getElementById("cb");
-  var items = Object.keys(cart).map(function(k){ return cart[k]; });
-  if(items.length === 0){
-    box.innerHTML = "<div class='empty'><p>Cart khali hai!<br>Kuch products add karein.</p></div>";
-    return;
-  }
-  var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
-  var rows = items.map(function(i){
-    return "<div class='cit'>"
-      +"<div class='cf'><div class='cfn'>"+i.name+" x "+i.qty+"</div>"
-      +"<div class='cfp'>Rs. "+(i.price*i.qty)+"</div></div>"
-      +"<button class='rb' onclick='rem("+i.id+")'>Hatao</button></div>";
-  }).join("");
-  var ao = ["Pandey Tola","Pandit Tola","Bhumihar Tola","Goswami Tola","Shop Pickup"]
-    .map(function(a){ return "<option>"+a+"</option>"; }).join("");
-  box.innerHTML = "<div class='ci'>"+rows+"</div>"
-    +"<div class='cs'>"
-    +"<div class='sr'><span>Subtotal</span><span>Rs. "+sub+"</span></div>"
-    +"<div class='sr'><span>Delivery</span><span style='color:green'>FREE</span></div>"
-    +"<div class='sr tot'><span>Total</span><span>Rs. "+sub+"</span></div>"
-    +"</div>"
-    +"<div class='of'><h3>Delivery Details</h3>"
-    +"<div class='fg'><label>Aapka Naam</label><input type='text' id='nm' placeholder='Naam likhein'></div>"
-    +"<div class='fg'><label>Phone Number</label><input type='tel' id='ph' placeholder='10 digit number'></div>"
-    +"<div class='fg'><label>Delivery Area</label><select id='ar'><option value=''>-- Area chunein --</option>"+ao+"</select></div>"
-    +"<div class='dn'>Free home delivery: Pandey Tola, Pandit Tola, Bhumihar Tola, Goswami Tola. Shop pickup bhi available.</div>"
-    +"<button class='wb' onclick='sendWA()'>WhatsApp pe Order Bhejo</button>"
-    +"</div>";
-}
+bill_text = "\n".join(bill_lines)
+print("\n" + bill_text)
 
-function sendWA(){
-  var nm = document.getElementById("nm").value.trim();
-  var ph = document.getElementById("ph").value.trim();
-  var ar = document.getElementById("ar").value;
-  if(!nm || !ph || !ar){ alert("Naam, phone aur area zaroor bharein!"); return; }
-  var items = Object.keys(cart).map(function(k){ return cart[k]; });
-  var sub = items.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
-  var msg = "NBP Store - Naya Order\\n\\n";
-  msg += "Naam: " + nm + "\\n";
-  msg += "Phone: " + ph + "\\n";
-  msg += "Area: " + ar + "\\n\\n";
-  msg += "Items:\\n";
-  items.forEach(function(i){ msg += "- " + i.name + " x " + i.qty + " = Rs. " + (i.price * i.qty) + "\\n"; });
-  msg += "\\nTotal: Rs. " + sub;
-  msg += "\\n\\nDhanyawad!";
-  window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(msg), "_blank");
-}
+# ─── WhatsApp Message ───
+wa_lines = []
+wa_lines.append("🛒 *NBP General Store & Puja Bhandar*")
+wa_lines.append("📍 Dhamna, Jamui, Bihar")
+wa_lines.append("")
+wa_lines.append(f"👤 *Customer:* {customer_naam}")
+wa_lines.append(f"🏘️ *Mohalla:* {locality}")
+wa_lines.append(f"🚚 *Delivery:* {'Ghar Delivery' if is_delivery else 'Shop Pickup'}")
+wa_lines.append("")
+wa_lines.append("*📦 Order Details:*")
+for item in cart:
+    amt = item["qty"] * item["daam"]
+    wa_lines.append(f"  • {item['naam']} × {item['qty']} {item['unit']} = ₹{amt:.2f}")
+wa_lines.append("")
+wa_lines.append(f"💰 *Subtotal:* ₹{subtotal_amount:.2f}")
+if is_delivery:
+    wa_lines.append(f"🛵 *Delivery Charge:* ₹{dc:.2f} ({int(total_items)} items)")
+wa_lines.append(f"✅ *Total Amount: ₹{grand_total:.2f}*")
+wa_lines.append("")
+wa_lines.append("🙏 _Dhanyawaad! Phir zaroor aana._")
 
-renderP();
-</script>
-</body>
-</html>"""
+wa_text = "\n".join(wa_lines)
 
-@app.route("/")
-def home():
-    # PRODUCTS लिस्ट को JSON में बदलकर वेबपेज पर लोड करना
-    page = HTML.replace("PRODUCTS_JSON", json.dumps(PRODUCTS))
-    return page
+print("\n" + "─" * 52)
+print("📱 WHATSAPP MESSAGE (copy karo):")
+print("─" * 52)
+print(wa_text)
+print("─" * 52)
+```
 
-if __name__ == "__main__":
-    print("=" * 45)
-    print("  NBP Store Website Chal Rahi Hai!")
-    print("  Browser mein kholein:")
-    print("  http://127.0.0.1:5000")
-    print("=" * 45)
-    app.run(debug=True, host="0.0.0.0", port=5000)
-    ]
+# ─────────────────────────────────────────────
+
+# DELIVERY CHART
+
+# ─────────────────────────────────────────────
+
+def show_delivery_chart():
+print(”\n” + “=” * 35)
+print(”  DELIVERY CHARGE CHART”)
+print(”=” * 35)
+print(f”  {‘Items’:<15} {‘Charge’}”)
+print(”-” * 35)
+print(f”  {‘1 - 9’:<15} Free”)
+for start in range(10, 61, 10):
+end = start + 9
+charge = delivery_charge(start)
+print(f”  {str(start) + ’ - ’ + str(end):<15} ₹{charge}”)
+print(f”  {‘60+’:<15} Usi hisaab se”)
+print(”=” * 35)
+
+# ─────────────────────────────────────────────
+
+# MAIN MENU
+
+# ─────────────────────────────────────────────
+
+def main():
+print(”\n” + “=” * 52)
+print(”  🏪 NBP GENERAL STORE & PUJA BHANDAR”)
+print(”     Dhamna, Jamui, Bihar”)
+print(”     Billing System v1.0”)
+print(”=” * 52)
+
+```
+while True:
+    print("\n📋 MENU:")
+    print("  1. Product Add Karo")
+    print("  2. Products Dekho")
+    print("  3. Product Delete Karo")
+    print("  4. Naya Bill Banao")
+    print("  5. Delivery Charge Chart Dekho")
+    print("  0. Bahar Jao (Exit)")
+    print()
+
+    choice = input("  Apna choice daalo: ").strip()
+
+    if choice == "1":
+        product_add()
+    elif choice == "2":
+        product_list()
+    elif choice == "3":
+        product_delete()
+    elif choice == "4":
+        new_bill()
+    elif choice == "5":
+        show_delivery_chart()
+    elif choice == "0":
+        print("\n🙏 Dhanyawaad! Jai Shri Ram.\n")
+        break
+    else:
+        print("❌ Galat choice. 0-5 mein se kuch daalo.")
+```
+
+if **name** == “**main**”:
+main()
